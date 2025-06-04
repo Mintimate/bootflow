@@ -91,6 +91,11 @@ updateGrub() {
 
 
 printMintimate
+# 创建netboot目录并进入
 mkdirNetboot
+# 下载 netboot 文件
 downloadNetBoot
+# 添加GRUB启动项
 modifyGrub
+# 更新 GRUB 配置
+updateGrub
