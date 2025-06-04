@@ -1,0 +1,13 @@
+$:
+  vscode:
+    - runner:
+        cpus: 4
+      docker:
+        build: .ide/Dockerfile
+      services:
+        - vscode
+        - docker
+      stages:
+        # 环境启动后需要执行的命令
+        - name: 初始化完成
+          script: echo "初始化完成"
