@@ -11,6 +11,37 @@ GREEN='\033[0;32m'  # 绿色
 YELLOW='\033[0;33m' # 黄色
 NC='\033[0m'        # 重置颜色
 
+printMintimate() {
+    echo -e "${GREEN}
+_____________________________________________________________
+    _   _
+    /  /|     ,                 ,
+---/| /-|----------__---_/_---------_--_-----__---_/_-----__-
+  / |/  |   /    /   )  /     /    / /  )  /   )  /     /___)
+_/__/___|__/____/___/__(_ ___/____/_/__/__(___(__(_ ___(___ _
+         Mintimate's Blog:https://www.mintimate.cn
+_____________________________________________________________${NC}"
+    echo -e "${GREEN}
+    快速配置 Linux 服务器救援模式
+    适用于 grub 引导启动的系统
+    作者：Mintimate
+   
+    获取帮助 -> QQ：198330181
+    （限：求助前，有给我视频三连的粉丝用户）
+
+    捐赠和赞赏：
+    https://www.afdian.com/a/mintimate
+    
+    更多教程：
+    Mintimate's Blog:
+    https://www.mintimate.cn
+    
+    Mintimate's Bilibili:
+    https://space.bilibili.com/355567627${NC}"
+}
+
+printMintimate
+
 # 创建netboot目录并进入
 echo -e "${GREEN} 正在创建 netboot 目录并进入 ${NC}"
 mkdir -p /netboot && cd /netboot || exit
@@ -37,6 +68,7 @@ EOF
 
 # 修改默认启动项
 echo -e "${GREEN} 是否修改默认启动项 ${NC}"
+echo -e "${YELLOW} 输入y后回车=>修改；其他键后回车=>不修改 ${NC}"
 echo -e "${YELLOW} 修改后，grub 默认首选启动替换为 Alpine Linux Minimal ${NC}"
 read temp
 if [ ${temp} = "y" ];then
