@@ -29,7 +29,7 @@ done
 mkdir -p /netboot && cd /netboot || exit
 
 # 设置镜像源
-rgeo="https://mirrors.tuna.tsinghua.edu.cn/alpine/edge"
+repo="https://mirrors.tuna.tsinghua.edu.cn/alpine/edge"
 
 # 下载必要文件
 wget "$repo/releases/x86_64/netboot/vmlinuz-virt" || exit
