@@ -11,33 +11,6 @@ GREEN='\033[0;32m'  # 绿色
 YELLOW='\033[0;33m' # 黄色
 NC='\033[0m'        # 重置颜色
 
-default_boot=false
-
-# 解析参数（支持 -d 1 和 --default）
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    -d)
-      if [ "$2" = "1" ]; then
-        echo -e "${YELLOW} 操作结束后，配置为默认启动项 ${NC}"
-        default_boot=true
-        shift 2
-      else
-        echo -e "${RED} 错误: -d 参数必须为 1 ${NC}"
-        exit 1
-      fi
-      ;;
-    --default)
-      echo -e "${YELLOW} 操作结束后，配置为默认启动项 ${NC}"
-      default_boot=true
-      shift
-      ;;
-    *)
-      echo -e "${RED} 错误: 未知参数 $1 ${NC}"
-      exit 1
-      ;;
-  esac
-done
-
 # 创建netboot目录并进入
 echo -e "${GREEN} 正在创建 netboot 目录并进入 ${NC}"
 mkdir -p /netboot && cd /netboot || exit
@@ -63,9 +36,14 @@ menuentry "Alpine Linux Minimal" {
 EOF
 
 # 修改默认启动项
-if [ "$default_boot" = true ]; then
+echo -e "${GREEN} 是否修改默认启动项 ${NC}"
+echo -e "${YELLOW} 修改后，grub 默认首选启动替换为 Alpine Linux Minimal ${NC}"
+read temp
+if [ ${temp} = "y" ];then
     echo -e "${GREEN} 修改默认启动项 ${NC}"
     sed -i 's/GRUB_DEFAULT=0/GRUB_DEFAULT="Alpine Linux Minimal"/' /etc/default/grub
+else
+    echo -e "${GREEN} 不修改默认启动项 ${NC}"
 fi
 
 # 更新 GRUB 配置
