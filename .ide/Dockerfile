@@ -5,7 +5,7 @@ FROM debian:bookworm-slim
 # 脚本必须依赖: unzip、wget/curl、zsh、git
 RUN apt update && \
     apt install -y \
-    curl unzip zsh git \
+    curl unzip zsh git wget \
     openssh-server \
     vim \
     webp && \
