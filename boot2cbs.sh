@@ -17,16 +17,17 @@ set -e
 check_root() {
     # 检测root权限
     if [ "$(id -u)" -ne 0 ]; then
-    echo "请使用root权限运行此脚本"
-    exit 1
+        echo -e "${RED}错误：请使用 root 用户运行此脚本${NC}"
+        exit 1
     fi
 }
 
 
 install_grub() {
     # 安装必要工具
-    apt update
-    apt install -y wget grub2-common util-linux genisoimage
+    apt update -y >>/dev/null
+    apt install -y wget grub2-common util-linux genisoimage >>/dev/null
+    echo -e "${GREEN}安装必要工具完成${NC}"
 }
 
 
@@ -45,7 +46,7 @@ find_data_disk() {
 
   # 如果没有找到数据盘，直接报错退出
   if [ ${#disks[@]} -eq 0 ]; then
-    echo "错误：未找到任何可用的数据盘挂载点" >&2
+    echo -e "${RED}错误：未找到任何可用的数据盘挂载点${NC}"
     return 1
   fi
 
@@ -61,35 +62,35 @@ download_iso() {
 
     # 如果输入是 HTTP/HTTPS URL，则下载
     if [[ "$iso_input" =~ ^https?:// ]]; then
-        echo "检测到 ISO URL，开始下载..."
+        echo -e "${YELLOW}检测到远程 ISO 文件，开始下载${NC}"
         ISO_PATH="$ISO_DIR/$ISO_NAME"
 
         # 如果文件已存在，跳过下载
         if [ -f "$ISO_PATH" ]; then
-            echo "ISO 文件已存在: $ISO_PATH"
+            ehco -e "${GREEN}$ISO_PATH 已存在，跳过下载${NC}"
             return 0
         fi
 
         # 下载 ISO 文件
         echo "正在下载 ISO 文件: $ISO_NAME"
         wget --show-progress -q -O "$ISO_PATH" "$iso_input" || {
-            echo "下载失败"
+            echo -e "${RED}下载失败${NC}"
             exit 1
         }
 
         # 验证 ISO 文件
         if ! file "$ISO_PATH" | grep -q "ISO"; then
-            echo "下载的文件不是有效的 ISO 镜像"
+            echo -e "${RED}下载的文件不是 ISO 格式${NC}"
             exit 1
         fi
 
     # 如果输入是本地路径，直接使用
     elif [ -f "$iso_input" ]; then
-        echo "检测到本地 ISO 文件: $iso_input"
+        echo -e "${GREEN}检测到本地 ISO 文件，直接使用${NC}"
         ISO_PATH="$iso_input"
     # 无效输入
     else
-        echo "错误：无效的 ISO 输入（必须是 URL 或本地文件路径）"
+        echo -e "${RED}错误：无效的 ISO 输入（必须是 URL 或本地文件路径）${NC}"
         exit 1
     fi
 }
@@ -100,14 +101,14 @@ extract_kernel_paths() {
 
     # 检查文件是否存在
     if [ ! -f "$ISO_FILE" ]; then
-        echo "Error: ISO file '$ISO_FILE' not found!" >&2
+        echo -e "${RED}ISO 文件不存在: $ISO_FILE${NC}"
         return 1
     fi
 
     # 使用 isoinfo 查找路径
     local PATHS
     PATHS=$(isoinfo -R -i "$ISO_FILE" -f | grep -E "initrd.gz|vmlinuz" || {
-        echo "Error: Failed to extract paths from ISO." >&2
+        echo -e "${RED}错误: 无法从ISO中提取内核启动路径${NC}"
         return 1
     })
 
@@ -117,14 +118,16 @@ extract_kernel_paths() {
 
     # 检查是否成功获取路径
     if [ -z "$INITRD" ] || [ -z "$VMLINUZ" ]; then
-        echo "Error: Required files (initrd.gz or vmlinuz) not found in ISO." >&2
+        echo -e "${RED}错误: 无法从ISO中提取内核启动路径${NC}"
         return 1
     fi
 
     # 打印结果（调试用）
-    echo "Extracted paths:"
-    echo "INITRD=$INITRD"
-    echo "VMLINUZ=$VMLINUZ"
+    echo -e "${GREEN}提取到的内核路径:${NC}"
+    echo -e "${GREEN}  initrd.gz: $INITRD${NC}"
+    echo -e "${GREEN}  vmlinuz:   $VMLINUZ${NC}"
+    echo -e "${GREEN}  ISO文件:   $ISO_FILE${NC}"
+
 }
 
 ### 主脚本逻辑 ###
@@ -158,7 +161,7 @@ fi
 # 查找分区UUID
 DISK_UUID=$(findmnt -n -o UUID -T "$ISO_PATH")
 if [ -z "$DISK_UUID" ]; then
-  echo "无法获取分区UUID"
+  echo -e "${RED}无法找到ISO文件所在的分区UUID${NC}"
   exit 1
 fi
 
@@ -189,9 +192,12 @@ EOF
 chmod a+x "$GRUB_ISO_CONF"
 
 # 更新GRUB配置
-echo "正在更新引导配置..."
+echo -e "${GREEN}正在更新GRUB配置${NC}"
 grub-mkconfig -o /boot/grub/grub.cfg
 
-echo "配置完成！可重启系统并选择从ISO启动"
-echo "ISO文件保存在: $ISO_PATH"
-echo "手动恢复: 删除 $GRUB_ISO_CONF 并运行 grub-mkconfig"
+echo -e "${GREEN}ISO引导已配置完成${NC}"
+echo -e "${GREEN}ISO文件保存在: $ISO_PATH${NC}"
+
+echo -e "${YELLOW}tips${NC}"
+echo -e "${YELLOW}如需修在，请删除 $GRUB_ISO_CONF 文件${NC}"
+echo -e "${YELLOW}并执行 grub-mkconfig -o /boot/grub/grub.cfg ${NC}"
