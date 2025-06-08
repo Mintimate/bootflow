@@ -53,9 +53,10 @@ check_root() {
 
 
 install_grub() {
+    echo -e "${GREEN}使用 apt 安装相关依赖${NC}"
     # 安装必要工具
     apt-get update -y >>/dev/null
-    apt-get install -y wget grub2-common util-linux genisoimage >>/dev/null
+    apt-get install -y wget grub2-common util-linux rsync genisoimage >>/dev/null
     echo -e "${GREEN}安装必要工具完成${NC}"
 }
 
@@ -117,6 +118,8 @@ download_iso() {
     elif [ -f "$iso_input" ]; then
         echo -e "${GREEN}检测到本地 ISO 文件，直接使用${NC}"
         ISO_PATH="$iso_input"
+        echo -e "${GREEN}复制到云硬盘挂载目录 $ISO_DIR${NC}"
+        rsync -ah --progress $iso_input "$ISO_DIR"
     # 无效输入
     else
         echo -e "${RED}错误：无效的 ISO 输入（必须是 URL 或本地文件路径）${NC}"
