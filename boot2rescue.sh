@@ -11,10 +11,26 @@ GREEN='\033[0;32m'  # 绿色
 YELLOW='\033[0;33m' # 黄色
 NC='\033[0m'        # 重置颜色
 
-# 设置镜像源
-repo="https://mirrors.tuna.tsinghua.edu.cn/alpine/edge"
-# 指定内核URL，从网络直接加载，防止占用本地硬盘，导致无法操作
-modl="$repo/releases/x86_64/netboot/modloop-virt"
+check_system() {
+    # 检测架构并设置镜像源
+    ARCH=$(uname -m)
+    if [ "$ARCH" = "x86_64" ]; then
+        echo -e "${GREEN} 当前是 x86_64 架构 ${NC}"
+        repo="https://mirrors.tuna.tsinghua.edu.cn/alpine/edge"
+        modl="$repo/releases/x86_64/netboot/modloop-virt"
+        kernel="vmlinuz-virt"
+        initramfs="initramfs-virt"
+    elif [ "$ARCH" = "aarch64" ]; then
+        echo -e "${GREEN} 当前是 aarch64 架构 ${NC}"
+        repo="https://mirrors.tuna.tsinghua.edu.cn/alpine/edge"
+        modl="$repo/releases/aarch64/netboot/modloop-virt"
+        kernel="vmlinuz-virt"
+        initramfs="initramfs-virt"
+    else
+        echo -e "${RED}不支持的架构: $ARCH ${NC}"
+        exit 1
+    fi
+}
 
 printMintimate() {
     echo -e "${GREEN}
@@ -55,8 +71,8 @@ mkdirNetboot() {
 downloadNetBoot() {
   # 下载 netboot 文件
   echo -e "${GREEN} 正在下载 netboot 文件 ${NC}"
-  wget -q "$repo/releases/x86_64/netboot/vmlinuz-virt" || exit
-  wget -q "$repo/releases/x86_64/netboot/initramfs-virt" || exit
+  wget -q "$repo/releases/$ARCH/netboot/$kernel" || exit
+  wget -q "$repo/releases/$ARCH/netboot/$initramfs" || exit
 }
 
 modifyGrub() {
@@ -64,9 +80,9 @@ modifyGrub() {
     echo -e "${GREEN} 正在添加 GRUB 启动项 ${NC}"
     cat >> /etc/grub.d/40_custom <<EOF
 menuentry "Alpine Linux Minimal" {
-    search --set=root --file /netboot/vmlinuz-virt
-    linux /netboot/vmlinuz-virt console=tty0 console=ttyS0,115200 ip=dhcp modloop=$modl alpine_repo=$repo/main/
-    initrd /netboot/initramfs-virt
+    search --set=root --file /netboot/$kernel
+    linux /netboot/$kernel console=tty0 console=ttyS0,115200 ip=dhcp modloop=$modl alpine_repo=$repo/main/
+    initrd /netboot/$initramfs
 }
 EOF
 
@@ -90,7 +106,9 @@ updateGrub() {
 }
 
 
+# 检查系统架构并设置镜像源
 printMintimate
+check_system
 # 创建netboot目录并进入
 mkdirNetboot
 # 下载 netboot 文件
