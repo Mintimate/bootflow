@@ -17,6 +17,25 @@ bash -c "$(wget -qO- https://cnb.cool/Mintimate/tool-forge/bootflow/-/git/raw/ma
 
 ![grub选择页面](assets/img/grubUI.webp)
 
+## 挂载ISO到Grub引导
+
+适用于在云厂商的云服务器上，通过提前挂载一块云硬盘，使其可以自动下载 ISO 文件，然后通过 Grub 引导进入 ISO 的安装界面。
+
+操作前提：**提前挂载一块云硬盘，使其可以自动下载 ISO 文件，脚本会自动下载或复制 ISO 到云硬盘更目录的 isos 目录下**。
+
+```bash
+# 下载脚本
+wget https://cnb.cool/Mintimate/tool-forge/bootflow/-/git/raw/main/boot2cbs.sh
+# 执行脚本
+bash boot2cbs.sh -i <ISO文件路径/ISO下载地址>
+```
+
+![挂载ISO到Grub引导](assets/img/mountISO.webp)
+
+挂载后，可以在开机引导内进行选择：
+
+![grub选择ISO](assets/img/grubUI-ISO.webp)
+
 ## Licence
 
 [![GPLv3](gplv3.png)](LICENSE)
