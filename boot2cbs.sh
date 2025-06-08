@@ -13,6 +13,35 @@ NC='\033[0m'        # 重置颜色
 # 遇到错误立即退出
 set -e
 
+printMintimate() {
+    echo -e "${GREEN}
+_____________________________________________________________
+    _   _
+    /  /|     ,                 ,
+---/| /-|----------__---_/_---------_--_-----__---_/_-----__-
+  / |/  |   /    /   )  /     /    / /  )  /   )  /     /___)
+_/__/___|__/____/___/__(_ ___/____/_/__/__(___(__(_ ___(___ _
+         Mintimate's Blog:https://www.mintimate.cn
+_____________________________________________________________${NC}"
+    echo -e "${GREEN}
+    快速挂载 ISO 文件到 Grub 启动项内（需要提前挂载云盘）
+    适用于 grub 引导启动的系统
+    作者：Mintimate
+   
+    获取帮助 -> QQ：198330181
+    （限：求助前，有给我视频三连的粉丝用户）
+
+    捐赠和赞赏：
+    https://www.afdian.com/a/mintimate
+    
+    更多教程：
+    Mintimate's Blog:
+    https://www.mintimate.cn
+    
+    Mintimate's Bilibili:
+    https://space.bilibili.com/355567627
+_____________________________________________________________${NC}"
+}
 
 check_root() {
     # 检测root权限
@@ -25,8 +54,8 @@ check_root() {
 
 install_grub() {
     # 安装必要工具
-    apt update -y >>/dev/null
-    apt install -y wget grub2-common util-linux genisoimage >>/dev/null
+    apt-get update -y >>/dev/null
+    apt-get install -y wget grub2-common util-linux genisoimage >>/dev/null
     echo -e "${GREEN}安装必要工具完成${NC}"
 }
 
@@ -133,9 +162,24 @@ extract_kernel_paths() {
 ### 主脚本逻辑 ###
 
 # 解析命令行参数
+check_root
 # 检查参数
 if [ $# -eq 0 ] || [[ "$1" != "-i" && "$1" != "--iso" ]]; then
     echo -e "${RED}用法: $0 -i|--iso <URL或本地路径>${NC}"
+    exit 1
+fi
+
+# 安装必要工具
+install_grub
+
+# 打印
+printMintimate
+echo -e "${YELLOW} 是否确认使用脚本，下载 ISO 文件到数据盘并配置 GRUB 引导${NC}"
+read temp
+if [ ${temp} = "y" ]; then
+    echo -e "${GREEN} 继续执行脚本 ${NC}"
+else
+    echo -e "${GREEN} Good bye, See U! ${NC}"
     exit 1
 fi
 
