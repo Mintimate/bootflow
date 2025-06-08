@@ -11,3 +11,17 @@ $:
         # 环境启动后需要执行的命令
         - name: 初始化完成
           script: echo "初始化完成"
+  push:
+      - name: "推送镜像"
+        imports:
+          - https://cnb.cool/Mintimate/secret/-/blob/main/SyncToGitHub.yml
+        stages:
+          - name: 自动同步代码
+            image: tencentcom/git-sync
+            settings:
+              target_url: https://github.com/Mintimate/bootflow.git
+              auth_type: https
+              username: ${GIT_USERNAME}
+              password: ${GIT_ACCESS_TOKEN}
+              branch: main
+              force: true
