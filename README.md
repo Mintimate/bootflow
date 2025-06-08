@@ -5,6 +5,8 @@
 - boot2rescue.sh: 在 Linux 设置上安装一个救援模式系统（支持 x86 和 ARM64架构）。
 - boot2cbs.sh: 将用户提供的 ISO 文件（系统镜像）下载或移动到已挂载的云硬盘中，使其可以在 Grub 引导并加载。
 
+仓库镜像: [GitHub](https://github.com/Mintimate/bootflow)、[CNB](https://cnb.cool/Mintimate/tool-forge/bootflow)
+
 ## Alpine 救援模式
 
 适用于在云厂商的云服务器上，通过救援模式进入系统。部分云厂商有提供独立的救援模式（比如： 腾讯云），那么理论上不需要使用本工具。
