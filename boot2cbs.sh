@@ -33,11 +33,11 @@ install_grub() {
 # 查找数据盘挂载点
 find_data_disk() {
   local disks=()
-  
+
   # 使用 findmnt 获取所有符合条件的挂载点
   while IFS= read -r mount; do
     # 排除系统关键目录，匹配常见数据盘挂载点
-    if [[ $mount =~ ^/(media|mnt|data)(/|$) ]] && 
+    if [[ $mount =~ ^/(media|mnt|data)(/|$) ]] &&
        [[ ! $mount =~ ^/(boot|home|var|usr)(/|$) ]]; then
       disks+=("$mount")
     fi
@@ -57,12 +57,13 @@ find_data_disk() {
 download_iso() {
     local iso_input="$1"
 
+    ISO_NAME=$(basename "$iso_input")
+
     # 如果输入是 HTTP/HTTPS URL，则下载
     if [[ "$iso_input" =~ ^https?:// ]]; then
         echo "检测到 ISO URL，开始下载..."
-        ISO_NAME=$(basename "$iso_input")
         ISO_PATH="$ISO_DIR/$ISO_NAME"
-        
+
         # 如果文件已存在，跳过下载
         if [ -f "$ISO_PATH" ]; then
             echo "ISO 文件已存在: $ISO_PATH"
@@ -86,7 +87,6 @@ download_iso() {
     elif [ -f "$iso_input" ]; then
         echo "检测到本地 ISO 文件: $iso_input"
         ISO_PATH="$iso_input"
-
     # 无效输入
     else
         echo "错误：无效的 ISO 输入（必须是 URL 或本地文件路径）"
@@ -97,7 +97,7 @@ download_iso() {
 # 从 ISO 提取 initrd.gz 和 vmlinuz 路径
 extract_kernel_paths() {
     local ISO_FILE="$1"
-    
+
     # 检查文件是否存在
     if [ ! -f "$ISO_FILE" ]; then
         echo "Error: ISO file '$ISO_FILE' not found!" >&2
@@ -130,29 +130,30 @@ extract_kernel_paths() {
 ### 主脚本逻辑 ###
 
 # 解析命令行参数
-while getopts ":iso:" opt; do
-    case "$opt" in
-        iso)
-            # 创建ISO存储目录
-            if DATA_DIR=$(find_data_disk); then
-                echo -e "${GREEN} 数据盘挂载点: $data_dir ${NC}"
-            else
-                echo -e "${RED} 未找到可用的数据盘 ${NC}"
-                exit 1
-            fi
-            ISO_DIR="$DATA_DIR/isos"
-            mkdir -p "$ISO_DIR"
-            download_iso "$OPTARG"
-            ;;
-        *)
-            echo "用法: $0 -iso <URL或本地路径>"
-            exit 1
-            ;;
-    esac
-done
+# 检查参数
+if [ $# -eq 0 ] || [[ "$1" != "-i" && "$1" != "--iso" ]]; then
+    echo -e "${RED}用法: $0 -i|--iso <URL或本地路径>${NC}"
+    exit 1
+fi
+
+# 获取ISO路径
+ISO_INPUT="$2"
+[ -z "$ISO_INPUT" ] && { echo -e "${RED}必须指定ISO路径${NC}"; exit 1; }
+
+# 设置存储目录
+DATA_DIR=$(find_data_disk) || { echo -e "${RED}未找到数据盘${NC}"; exit 1; }
+ISO_DIR="$DATA_DIR/isos"
+mkdir -p "$ISO_DIR"
+
+# 下载ISO文件
+if ! download_iso "$ISO_INPUT"; then
+    exit 1
+fi
 
 # 提取内核路径
-extract_kernel_paths "$ISO_PATH" || exit 1
+if ! extract_kernel_paths "$ISO_PATH"; then
+    exit 1
+fi
 
 # 查找分区UUID
 DISK_UUID=$(findmnt -n -o UUID -T "$ISO_PATH")
@@ -177,9 +178,9 @@ menuentry "Boot from ISO" {
     set isofile=/isos/$ISO_NAME
 
     # 挂载 ISO 并加载内核
-    loopback loop $isofile
-    linux (loop)/$kernel boot=live components findiso=$isofile
-    initrd (loop)/$initrd
+    loopback loop /isos/$ISO_NAME
+    linux (loop)$VMLINUZ boot=live components findiso=/isos/$ISO_NAME
+    initrd (loop)$INITRD
 }
 
 EOF
