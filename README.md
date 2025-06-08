@@ -1,6 +1,8 @@
 # BootFlow 🚀
 ​​极简系统引导工具集​​ | "From BIOS to System, Simply Boot."
 
+[English README](README.en.md)
+
 脚本：
 - boot2rescue.sh: 在 Linux 设置上安装一个救援模式系统（支持 x86 和 ARM64架构）。
 - boot2cbs.sh: 将用户提供的 ISO 文件（系统镜像）下载或移动到已挂载的云硬盘中，使其可以在 Grub 引导并加载。
